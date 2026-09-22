@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Sistema de Gestão{% endblock %}
+{% block content %}
+
+<div class="grid">
+    <div class="card">
+        <h3>Produtos cadastrados</h3>
+        <div class="value">{{ products|length }}</div>
+    </div>
+    <div class="card">
+        <h3>Clientes cadastrados</h3>
+        <div class="value">{{ clients|length }}</div>
+    </div>
+    <div class="card">
+        <h3>Vendas registradas</h3>
+        <div class="value">{{ sales|length }}</div>
+    </div>
+    <div class="card">
+        <h3>Faturamento total</h3>
+        <div class="value">R$ {{ "%.2f"|format(sales|sum(attribute="total")) }}</div>
+    </div>
+</div>
+
+{% if low_stock %}
+<div class="alert">
+    ⚠️ <strong>{{ low_stock|length }} produto(s) com estoque baixo (≤ 5 un.):</strong>
+    {{ low_stock|map(attribute="name")|join(", ") }}
+</div>
+{% endif %}
+
+<section>
+    <h2>Produtos</h2>
+    <table>
+        <thead>
+            <tr><th>Nome</th><th>Preço</th><th>Estoque</th></tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>R$ {{ "%.2f"|format(p.price) }}</td>
+                <td>{{ p.stock_quantity }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">Nenhum produto cadastrado ainda. Use a API (<code>/docs</code>) para adicionar.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Vendas recentes</h2>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th></tr>
+        </thead>
+        <tbody>
+            {% for s in sales %}
+            <tr>
+                <td>#{{ s.id }}</td>
+                <td>{{ s.client_id or "Não informado" }}</td>
+                <td>R$ {{ "%.2f"|format(s.total) }}</td>
+                <td>{{ s.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">Nenhuma venda registrada ainda.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<p style="color:#888; font-size:0.85rem;">
+    Documentação interativa da API disponível em <a href="/docs">/docs</a>.
+</p>
+
+{% endblock %}
