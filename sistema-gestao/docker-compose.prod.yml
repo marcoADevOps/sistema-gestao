@@ -15,7 +15,7 @@ services:
       retries: 5
 
   app:
-    image: ${IMAGE_NAME:-ghcr.io/marcoADevOps}:latest
+    image: ${IMAGE_NAME:-ghcr.io/marcoadevops}:latest
     restart: unless-stopped
     depends_on:
       db:
