@@ -52,21 +52,17 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
+
   deploy:
     needs: build-and-push
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Deploy via SSH na VM
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.PROXMOX_HOST }}
-          username: ${{ secrets.PROXMOX_USER }}
-          key: ${{ secrets.PROXMOX_SSH_KEY }}
-          script: |
-            cd /opt/sistema-gestao
-            git pull origin main
-            export IMAGE_NAME=${{ env.IMAGE_NAME }}
-            docker compose -f docker-compose.prod.yml pull app
-            docker compose -f docker-compose.prod.yml up -d
-            docker image prune -f
+      - name: Atualizar e reiniciar os containers
+        run: |
+          cd /opt/sistema-gestao
+          git pull origin main
+          export IMAGE_NAME=${{ env.IMAGE_NAME }}
+          docker compose -f docker-compose.prod.yml pull app
+          docker compose -f docker-compose.prod.yml up -d
+          docker image prune -f
