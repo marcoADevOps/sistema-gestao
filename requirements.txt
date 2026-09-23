@@ -5,6 +5,9 @@ psycopg2-binary==2.9.9
 jinja2==3.1.4
 python-multipart==0.0.9
 pydantic==2.9.2
+bcrypt==4.2.0
+itsdangerous==2.2.0
 
+# desenvolvimento e testes
 pytest==8.3.3
 httpx==0.27.2

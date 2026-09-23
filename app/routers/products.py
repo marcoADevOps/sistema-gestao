@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
+from app.auth import require_login_api
 from app.database import get_db
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+router = APIRouter(prefix="/api/products", tags=["products"], dependencies=[Depends(require_login_api)])
 
 
 @router.post("/", response_model=schemas.ProductOut)

@@ -3,10 +3,11 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, models, schemas
+from app.auth import require_login_web
 from app.database import get_db
 
-router = APIRouter(prefix="/web", tags=["web"])
+router = APIRouter(prefix="/web", tags=["web"], dependencies=[Depends(require_login_web)])
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -60,10 +61,15 @@ def create_sale_web(
 
 
 @router.get("/products/{product_id}/edit", response_class=HTMLResponse)
-def edit_product_form(product_id: int, request: Request, db: Session = Depends(get_db)):
+def edit_product_form(
+    product_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_login_web),
+):
     product = crud.get_product(db, product_id)
     return templates.TemplateResponse(
-        "edit_product.html", {"request": request, "product": product}
+        "edit_product.html", {"request": request, "product": product, "user": user}
     )
 
 
@@ -82,10 +88,15 @@ def edit_product_submit(
 
 
 @router.get("/clients/{client_id}/edit", response_class=HTMLResponse)
-def edit_client_form(client_id: int, request: Request, db: Session = Depends(get_db)):
+def edit_client_form(
+    client_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_login_web),
+):
     client = crud.get_client(db, client_id)
     return templates.TemplateResponse(
-        "edit_client.html", {"request": request, "client": client}
+        "edit_client.html", {"request": request, "client": client, "user": user}
     )
 
 

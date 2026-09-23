@@ -22,6 +22,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://gestao:${POSTGRES_PASSWORD:-gestao_dev_password}@db:5432/gestao
+      SESSION_SECRET_KEY: ${SESSION_SECRET_KEY:-troque-esta-chave-em-producao}
     ports:
       - "8000:8000"
     healthcheck:

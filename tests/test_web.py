@@ -6,7 +6,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.database import Base, engine
+from app.database import Base, engine, SessionLocal
+from app.auth import hash_password
+from app import models
 
 
 @pytest.fixture(autouse=True)
@@ -17,6 +19,17 @@ def setup_and_teardown_db():
 
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def login_test_user(setup_and_teardown_db):
+    db = SessionLocal()
+    db.add(models.User(username="testuser", hashed_password=hash_password("testpass123")))
+    db.commit()
+    db.close()
+
+    client.post("/login", data={"username": "testuser", "password": "testpass123"})
+    yield
 
 
 def test_dashboard_loads():

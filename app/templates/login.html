@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Sistema de Gestão{% endblock %}
+{% block content %}
+
+<section class="panel" style="max-width: 400px; margin: 4rem auto;">
+    <h2>Entrar</h2>
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/login">
+        <label>Usuário
+            <input type="text" name="username" required autofocus>
+        </label>
+        <label>Senha
+            <input type="password" name="password" required>
+        </label>
+        <button type="submit">Entrar</button>
+    </form>
+</section>
+
+{% endblock %}

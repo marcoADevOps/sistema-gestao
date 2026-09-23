@@ -64,6 +64,20 @@ export IMAGE_NAME=ghcr.io/marcoadevops/sistema-gestao
 docker compose -f docker-compose.prod.yml up -d
 ```
 
+## Autenticação
+
+Todo o dashboard e a API exigem login — não existe cadastro público (de
+propósito, por segurança). Antes de acessar pela primeira vez, crie um
+usuário:
+
+```bash
+docker compose -f docker-compose.prod.yml exec app python -m app.create_admin <usuario> <senha>
+```
+
+Depois disso, acesse `http://SEU_IP:8000` e faça login normalmente. A sessão
+é mantida por cookie assinado — defina um `SESSION_SECRET_KEY` forte no
+`.env` antes de ir para produção (veja `.env.example`).
+
 ## Rodando os testes
 
 ```bash
