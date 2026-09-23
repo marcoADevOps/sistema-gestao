@@ -2,6 +2,10 @@
 {% block title %}Dashboard — Sistema de Gestão{% endblock %}
 {% block content %}
 
+{% if error %}
+<div class="alert alert-error">⚠️ Não foi possível registrar a venda: {{ error }}</div>
+{% endif %}
+
 <div class="grid">
     <div class="card">
         <h3>Produtos cadastrados</h3>
@@ -28,6 +32,69 @@
 </div>
 {% endif %}
 
+<div class="two-col">
+    <section class="panel">
+        <h2>Cadastrar produto</h2>
+        <form method="post" action="/web/products">
+            <label>Nome
+                <input type="text" name="name" required>
+            </label>
+            <label>Preço (R$)
+                <input type="number" name="price" step="0.01" min="0" required>
+            </label>
+            <label>Estoque inicial
+                <input type="number" name="stock_quantity" min="0" value="0" required>
+            </label>
+            <button type="submit">Cadastrar produto</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Cadastrar cliente</h2>
+        <form method="post" action="/web/clients">
+            <label>Nome
+                <input type="text" name="name" required>
+            </label>
+            <label>Telefone
+                <input type="text" name="phone" placeholder="(opcional)">
+            </label>
+            <label>E-mail
+                <input type="email" name="email" placeholder="(opcional)">
+            </label>
+            <button type="submit">Cadastrar cliente</button>
+        </form>
+    </section>
+</div>
+
+<section class="panel">
+    <h2>Registrar venda</h2>
+    {% if products %}
+    <form method="post" action="/web/sales">
+        <label>Produto
+            <select name="product_id" required>
+                {% for p in products %}
+                <option value="{{ p.id }}">{{ p.name }} — R$ {{ "%.2f"|format(p.price) }} (estoque: {{ p.stock_quantity }})</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Quantidade
+            <input type="number" name="quantity" min="1" value="1" required>
+        </label>
+        <label>Cliente (opcional)
+            <select name="client_id">
+                <option value="">Não informado</option>
+                {% for c in clients %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Registrar venda</button>
+    </form>
+    {% else %}
+    <p style="color:#888;">Cadastre ao menos um produto antes de registrar uma venda.</p>
+    {% endif %}
+</section>
+
 <section>
     <h2>Produtos</h2>
     <table>
@@ -42,7 +109,27 @@
                 <td>{{ p.stock_quantity }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="3">Nenhum produto cadastrado ainda. Use a API (<code>/docs</code>) para adicionar.</td></tr>
+            <tr><td colspan="3">Nenhum produto cadastrado ainda.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Clientes</h2>
+    <table>
+        <thead>
+            <tr><th>Nome</th><th>Telefone</th><th>E-mail</th></tr>
+        </thead>
+        <tbody>
+            {% for c in clients %}
+            <tr>
+                <td>{{ c.name }}</td>
+                <td>{{ c.phone or "—" }}</td>
+                <td>{{ c.email or "—" }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">Nenhum cliente cadastrado ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>

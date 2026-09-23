@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.database import Base, engine, get_db
-from app.routers import products, clients, sales
+from app.routers import products, clients, sales, web
 
 # Cria as tabelas automaticamente se não existirem (suficiente para o MVP;
 # num projeto maior isso vira migração com Alembic).
@@ -16,6 +16,7 @@ app = FastAPI(title="Sistema de Gestão - Estoque e Vendas")
 app.include_router(products.router)
 app.include_router(clients.router)
 app.include_router(sales.router)
+app.include_router(web.router)
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -27,7 +28,7 @@ def health_check():
 
 
 @app.get("/", response_class=HTMLResponse)
-def dashboard(request: Request, db: Session = Depends(get_db)):
+def dashboard(request: Request, error: str = None, db: Session = Depends(get_db)):
     products_list = crud.list_products(db)
     clients_list = crud.list_clients(db)
     sales_list = crud.list_sales(db)
@@ -39,5 +40,6 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
             "clients": clients_list,
             "sales": sales_list,
             "low_stock": [p for p in products_list if p.stock_quantity <= 5],
+            "error": error,
         },
     )
