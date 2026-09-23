@@ -97,6 +97,47 @@ portas no roteador.
 | Push rejeitado: `refusing to allow a Personal Access Token to create or update workflow` | Token usado no `git push` só tinha o escopo `repo`. Editar arquivos dentro de `.github/workflows/` exige o escopo `workflow` também, por política de segurança do GitHub. |
 | Job de deploy ficava preso "in progress" por muito tempo sem erro aparente | O runner self-hosted não estava instalado/rodando na VM — o job fica na fila esperando silenciosamente até um runner disponível aparecer. Resolvido instalando o runner como serviço `systemd` na VM. |
 
+## Backup e restauração do banco
+
+Um backup diário automático do Postgres é feito via `scripts/backup-db.sh`,
+agendado por cron na VM. Backups ficam em `backups/` (fora do controle de
+versão), comprimidos, com retenção de 14 dias — mais antigos que isso são
+apagados automaticamente.
+
+**Configurar o agendamento (uma vez, na VM):**
+```bash
+chmod +x scripts/backup-db.sh scripts/restore-db.sh
+crontab -e
+```
+Adicione a linha (roda todo dia às 3h da manhã):
+```
+0 3 * * * /opt/sistema-gestao/scripts/backup-db.sh >> /opt/sistema-gestao/backups/backup.log 2>&1
+```
+
+**Rodar um backup manual a qualquer momento:**
+```bash
+./scripts/backup-db.sh
+```
+
+**Restaurar um backup** (sobrescreve os dados atuais — use com cuidado):
+```bash
+./scripts/restore-db.sh backups/gestao_20260924_030000.sql.gz
+```
+
+## Monitoramento
+
+O container `app` tem um healthcheck (`/health`) configurado no
+docker-compose — o Docker reinicia o container automaticamente se ele parar
+de responder.
+
+Para visibilidade contínua, o `docker-compose.prod.yml` também sobe um
+painel de monitoramento com **Uptime Kuma**, acessível em
+`http://SEU_IP:3001`. Na primeira vez, crie uma conta de admin e configure
+um monitor HTTP(S) apontando para `http://app:8000/health` (dentro da rede
+Docker) ou `http://SEU_IP:8000/health` (via IP da VM), e configure um canal
+de alerta (Telegram, Discord, e-mail, etc.) nas notificações do Uptime Kuma
+para ser avisado se a aplicação cair.
+
 ## Roadmap
 
 - [x] **v1** — Cadastro de produtos, clientes, registro de vendas com baixa

@@ -24,6 +24,12 @@ services:
       DATABASE_URL: postgresql://gestao:${POSTGRES_PASSWORD:-gestao_dev_password}@db:5432/gestao
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   db_data:

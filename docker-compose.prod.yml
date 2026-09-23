@@ -15,7 +15,7 @@ services:
       retries: 5
 
   app:
-    image: ${IMAGE_NAME:-ghcr.io/marcoadevops/sistema-gestao}:latest
+    image: ${IMAGE_NAME:-ghcr.io/SEU_USUARIO/SEU_REPO}:latest
     restart: unless-stopped
     depends_on:
       db:
@@ -24,6 +24,21 @@ services:
       DATABASE_URL: postgresql://gestao:${POSTGRES_PASSWORD:-gestao_dev_password}@db:5432/gestao
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  monitoring:
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
 
 volumes:
   db_data:
+  uptime_kuma_data:
