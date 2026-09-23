@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Editar cliente{% endblock %}
+{% block content %}
+
+<section class="panel" style="max-width: 480px;">
+    <h2>Editar cliente</h2>
+    <form method="post" action="/web/clients/{{ client.id }}/edit">
+        <label>Nome
+            <input type="text" name="name" value="{{ client.name }}" required>
+        </label>
+        <label>Telefone
+            <input type="text" name="phone" value="{{ client.phone or '' }}" placeholder="(opcional)">
+        </label>
+        <label>E-mail
+            <input type="email" name="email" value="{{ client.email or '' }}" placeholder="(opcional)">
+        </label>
+        <button type="submit">Salvar alterações</button>
+    </form>
+    <p style="margin-top: 1rem;"><a href="/">← Voltar ao dashboard</a></p>
+</section>
+
+{% endblock %}

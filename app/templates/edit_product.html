@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Editar produto{% endblock %}
+{% block content %}
+
+<section class="panel" style="max-width: 480px;">
+    <h2>Editar produto</h2>
+    <form method="post" action="/web/products/{{ product.id }}/edit">
+        <label>Nome
+            <input type="text" name="name" value="{{ product.name }}" required>
+        </label>
+        <label>Preço (R$)
+            <input type="number" name="price" step="0.01" min="0" value="{{ product.price }}" required>
+        </label>
+        <label>Estoque
+            <input type="number" name="stock_quantity" min="0" value="{{ product.stock_quantity }}" required>
+        </label>
+        <button type="submit">Salvar alterações</button>
+    </form>
+    <p style="margin-top: 1rem;"><a href="/">← Voltar ao dashboard</a></p>
+</section>
+
+{% endblock %}
