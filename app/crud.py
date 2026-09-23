@@ -25,6 +25,27 @@ def get_product(db: Session, product_id: int) -> models.Product:
     return product
 
 
+def update_product(db: Session, product_id: int, product: schemas.ProductCreate) -> models.Product:
+    db_product = get_product(db, product_id)
+    db_product.name = product.name
+    db_product.price = product.price
+    db_product.stock_quantity = product.stock_quantity
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+def delete_product(db: Session, product_id: int) -> None:
+    db_product = get_product(db, product_id)
+    if db_product.sale_items:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Não é possível excluir '{db_product.name}': já existem vendas registradas com esse produto.",
+        )
+    db.delete(db_product)
+    db.commit()
+
+
 # ---------- Clientes ----------
 
 def create_client(db: Session, client: schemas.ClientCreate) -> models.Client:
@@ -37,6 +58,34 @@ def create_client(db: Session, client: schemas.ClientCreate) -> models.Client:
 
 def list_clients(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Client).offset(skip).limit(limit).all()
+
+
+def get_client(db: Session, client_id: int) -> models.Client:
+    client = db.query(models.Client).filter(models.Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    return client
+
+
+def update_client(db: Session, client_id: int, client: schemas.ClientCreate) -> models.Client:
+    db_client = get_client(db, client_id)
+    db_client.name = client.name
+    db_client.phone = client.phone
+    db_client.email = client.email
+    db.commit()
+    db.refresh(db_client)
+    return db_client
+
+
+def delete_client(db: Session, client_id: int) -> None:
+    db_client = get_client(db, client_id)
+    if db_client.sales:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Não é possível excluir '{db_client.name}': já existem vendas registradas para esse cliente.",
+        )
+    db.delete(db_client)
+    db.commit()
 
 
 # ---------- Vendas ----------
@@ -79,3 +128,19 @@ def create_sale(db: Session, sale: schemas.SaleCreate) -> models.Sale:
 
 def list_sales(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Sale).offset(skip).limit(limit).all()
+
+
+def get_sale(db: Session, sale_id: int) -> models.Sale:
+    sale = db.query(models.Sale).filter(models.Sale.id == sale_id).first()
+    if not sale:
+        raise HTTPException(status_code=404, detail="Venda não encontrada")
+    return sale
+
+
+def delete_sale(db: Session, sale_id: int) -> None:
+    """Exclui a venda e devolve as quantidades ao estoque dos produtos envolvidos."""
+    sale = get_sale(db, sale_id)
+    for item in sale.items:
+        item.product.stock_quantity += item.quantity
+    db.delete(sale)  # cascade="all, delete-orphan" no relacionamento já apaga os itens
+    db.commit()

@@ -99,7 +99,7 @@
     <h2>Produtos</h2>
     <table>
         <thead>
-            <tr><th>Nome</th><th>Preço</th><th>Estoque</th></tr>
+            <tr><th>Nome</th><th>Preço</th><th>Estoque</th><th colspan="2"></th></tr>
         </thead>
         <tbody>
             {% for p in products %}
@@ -107,9 +107,15 @@
                 <td>{{ p.name }}</td>
                 <td>R$ {{ "%.2f"|format(p.price) }}</td>
                 <td>{{ p.stock_quantity }}</td>
+                <td><a href="/web/products/{{ p.id }}/edit">Editar</a></td>
+                <td>
+                    <form method="post" action="/web/products/{{ p.id }}/delete" onsubmit="return confirm('Excluir o produto {{ p.name }}?');" style="display:inline;">
+                        <button type="submit" class="btn-danger">Excluir</button>
+                    </form>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="3">Nenhum produto cadastrado ainda.</td></tr>
+            <tr><td colspan="5">Nenhum produto cadastrado ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -119,7 +125,7 @@
     <h2>Clientes</h2>
     <table>
         <thead>
-            <tr><th>Nome</th><th>Telefone</th><th>E-mail</th></tr>
+            <tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th colspan="2"></th></tr>
         </thead>
         <tbody>
             {% for c in clients %}
@@ -127,9 +133,15 @@
                 <td>{{ c.name }}</td>
                 <td>{{ c.phone or "—" }}</td>
                 <td>{{ c.email or "—" }}</td>
+                <td><a href="/web/clients/{{ c.id }}/edit">Editar</a></td>
+                <td>
+                    <form method="post" action="/web/clients/{{ c.id }}/delete" onsubmit="return confirm('Excluir o cliente {{ c.name }}?');" style="display:inline;">
+                        <button type="submit" class="btn-danger">Excluir</button>
+                    </form>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="3">Nenhum cliente cadastrado ainda.</td></tr>
+            <tr><td colspan="5">Nenhum cliente cadastrado ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -139,7 +151,7 @@
     <h2>Vendas recentes</h2>
     <table>
         <thead>
-            <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th></tr>
+            <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th><th></th></tr>
         </thead>
         <tbody>
             {% for s in sales %}
@@ -148,9 +160,14 @@
                 <td>{{ s.client_id or "Não informado" }}</td>
                 <td>R$ {{ "%.2f"|format(s.total) }}</td>
                 <td>{{ s.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+                <td>
+                    <form method="post" action="/web/sales/{{ s.id }}/delete" onsubmit="return confirm('Excluir a venda #{{ s.id }}? O estoque dos produtos sera devolvido.');" style="display:inline;">
+                        <button type="submit" class="btn-danger">Excluir</button>
+                    </form>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="4">Nenhuma venda registrada ainda.</td></tr>
+            <tr><td colspan="5">Nenhuma venda registrada ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
