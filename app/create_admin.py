@@ -29,7 +29,7 @@ def main():
             print(f"Usuário '{username}' já existe.")
             return
 
-        user = models.User(username=username, hashed_password=hash_password(password))
+        user = models.User(username=username, hashed_password=hash_password(password), role="admin")
         db.add(user)
         db.commit()
         print(f"Usuário '{username}' criado com sucesso.")

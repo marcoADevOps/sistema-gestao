@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
-from app.auth import require_login_web
+from app.auth import require_login_web, require_admin_web
 from app.database import get_db
 
 router = APIRouter(prefix="/web", tags=["web"], dependencies=[Depends(require_login_web)])
@@ -17,6 +17,7 @@ def create_product_web(
     price: float = Form(...),
     stock_quantity: int = Form(0),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin_web),
 ):
     crud.create_product(
         db, schemas.ProductCreate(name=name, price=price, stock_quantity=stock_quantity)
@@ -65,7 +66,7 @@ def edit_product_form(
     product_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    user: models.User = Depends(require_login_web),
+    user: models.User = Depends(require_admin_web),
 ):
     product = crud.get_product(db, product_id)
     return templates.TemplateResponse(
@@ -80,6 +81,7 @@ def edit_product_submit(
     price: float = Form(...),
     stock_quantity: int = Form(...),
     db: Session = Depends(get_db),
+    _: models.User = Depends(require_admin_web),
 ):
     crud.update_product(
         db, product_id, schemas.ProductCreate(name=name, price=price, stock_quantity=stock_quantity)
@@ -115,7 +117,9 @@ def edit_client_submit(
 
 
 @router.post("/products/{product_id}/delete")
-def delete_product_web(product_id: int, db: Session = Depends(get_db)):
+def delete_product_web(
+    product_id: int, db: Session = Depends(get_db), _: models.User = Depends(require_admin_web)
+):
     try:
         crud.delete_product(db, product_id)
     except HTTPException as exc:
@@ -124,7 +128,9 @@ def delete_product_web(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/clients/{client_id}/delete")
-def delete_client_web(client_id: int, db: Session = Depends(get_db)):
+def delete_client_web(
+    client_id: int, db: Session = Depends(get_db), _: models.User = Depends(require_admin_web)
+):
     try:
         crud.delete_client(db, client_id)
     except HTTPException as exc:
@@ -133,6 +139,8 @@ def delete_client_web(client_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/sales/{sale_id}/delete")
-def delete_sale_web(sale_id: int, db: Session = Depends(get_db)):
+def delete_sale_web(
+    sale_id: int, db: Session = Depends(get_db), _: models.User = Depends(require_admin_web)
+):
     crud.delete_sale(db, sale_id)
     return RedirectResponse(url="/", status_code=303)

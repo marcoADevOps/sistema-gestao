@@ -78,6 +78,31 @@ Depois disso, acesse `http://SEU_IP:8000` e faça login normalmente. A sessão
 é mantida por cookie assinado — defina um `SESSION_SECRET_KEY` forte no
 `.env` antes de ir para produção (veja `.env.example`).
 
+### Papéis de usuário
+
+Existem dois papéis:
+
+- **Administrador** — acesso completo: cadastra/edita/exclui produtos,
+  edita/exclui clientes, exclui vendas, e gerencia outros usuários (tela
+  `/web/users`, acessível pelo link "Usuários" no cabeçalho)
+- **Operador** — pensado para quem vende no dia a dia: registra vendas,
+  cadastra e edita clientes. Não vê nem consegue acessar (mesmo direto pela
+  URL) as ações de administrador — a restrição é aplicada no backend, não só
+  escondida na tela
+
+O primeiro usuário criado por `python -m app.create_admin` é sempre
+administrador. Para criar operadores, um admin já logado usa a tela
+"Usuários" no sistema.
+
+**Se você já tinha usuários criados antes dessa versão** (coluna `role`
+nova), rode esta migração manual uma vez, direto no banco:
+```bash
+docker compose -f docker-compose.prod.yml exec db psql -U gestao -c \
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operador';"
+docker compose -f docker-compose.prod.yml exec db psql -U gestao -c \
+  "UPDATE users SET role='admin' WHERE username='SEU_USUARIO_ATUAL';"
+```
+
 ## Rodando os testes
 
 ```bash

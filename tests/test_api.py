@@ -26,7 +26,11 @@ def login_test_user(setup_and_teardown_db):
     """Cria um usuário de teste e autentica o client antes de cada teste,
     já que todas as rotas de API/web exigem sessão válida."""
     db = SessionLocal()
-    db.add(models.User(username="testuser", hashed_password=hash_password("testpass123")))
+    db.add(
+        models.User(
+            username="testuser", hashed_password=hash_password("testpass123"), role="admin"
+        )
+    )
     db.commit()
     db.close()
 

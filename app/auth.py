@@ -36,3 +36,17 @@ def require_login_api(request: Request, db: Session = Depends(get_db)) -> models
     if not user:
         raise HTTPException(status_code=401, detail="Não autenticado")
     return user
+
+
+def require_admin_web(user: models.User = Depends(require_login_web)) -> models.User:
+    """Para rotas HTML restritas a administradores: operador é redirecionado pro dashboard."""
+    if user.role != "admin":
+        raise HTTPException(status_code=307, headers={"Location": "/"})
+    return user
+
+
+def require_admin_api(user: models.User = Depends(require_login_api)) -> models.User:
+    """Para rotas de API restritas a administradores: operador recebe 403."""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    return user

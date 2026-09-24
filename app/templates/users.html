@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Usuários — Sistema de Gestão{% endblock %}
+{% block content %}
+
+<p class="breadcrumb"><a href="/">← Dashboard</a></p>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<section class="panel" style="max-width: 480px; margin-bottom: 2rem;">
+    <h2>Adicionar usuário</h2>
+    <form method="post" action="/web/users">
+        <label>Usuário
+            <input type="text" name="username" required>
+        </label>
+        <label>Senha
+            <input type="password" name="password" required>
+        </label>
+        <label>Papel
+            <select name="role" required>
+                <option value="operador">Operador (registra vendas e clientes)</option>
+                <option value="admin">Administrador (acesso completo)</option>
+            </select>
+        </label>
+        <button type="submit">Criar usuário</button>
+    </form>
+</section>
+
+<section>
+    <h2>Usuários cadastrados</h2>
+    <table>
+        <thead>
+            <tr><th>Usuário</th><th>Papel</th><th>Criado em</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.username }}</td>
+                <td>{{ "Administrador" if u.role == "admin" else "Operador" }}</td>
+                <td>{{ u.created_at.strftime("%d/%m/%Y") }}</td>
+                <td>
+                    {% if u.id != user.id %}
+                    <form method="post" action="/web/users/{{ u.id }}/delete" onsubmit="return confirm('Excluir o usuário {{ u.username }}?');" style="display:inline;">
+                        <button type="submit" class="btn-danger">Excluir</button>
+                    </form>
+                    {% else %}
+                    <span class="footnote" style="margin:0;">(você)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr class="empty-row"><td colspan="4">Nenhum usuário cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endblock %}
