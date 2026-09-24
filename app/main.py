@@ -21,7 +21,15 @@ app = FastAPI(title="Sistema de Gestão - Estoque e Vendas")
 # SESSION_SECRET_KEY no .env com um valor longo e aleatório
 # (ex: python -c "import secrets; print(secrets.token_hex(32))").
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY", "troque-esta-chave-em-producao")
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
+
+# Defina SESSION_COOKIE_SECURE=true no .env quando a aplicação estiver
+# exposta via HTTPS (ex: atrás do Cloudflare Tunnel). Deixe em false
+# (padrão) para acesso local só por HTTP, como http://192.168.1.8:8000 —
+# com https_only=True nesse caso, o login pararia de funcionar.
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
+app.add_middleware(
+    SessionMiddleware, secret_key=SESSION_SECRET_KEY, https_only=SESSION_COOKIE_SECURE
+)
 
 app.include_router(auth.router)
 app.include_router(products.router)
