@@ -3,32 +3,32 @@
 {% block content %}
 
 {% if error %}
-<div class="alert alert-error">⚠️ Não foi possível registrar a venda: {{ error }}</div>
+<div class="alert alert-error">Não foi possível registrar a venda: {{ error }}</div>
 {% endif %}
 
 <div class="grid">
     <div class="card">
-        <h3>Produtos cadastrados</h3>
         <div class="value">{{ products|length }}</div>
+        <h3>Produtos cadastrados</h3>
     </div>
     <div class="card">
-        <h3>Clientes cadastrados</h3>
         <div class="value">{{ clients|length }}</div>
+        <h3>Clientes cadastrados</h3>
     </div>
     <div class="card">
-        <h3>Vendas registradas</h3>
         <div class="value">{{ sales|length }}</div>
+        <h3>Vendas registradas</h3>
     </div>
     <div class="card">
-        <h3>Faturamento total</h3>
         <div class="value">R$ {{ "%.2f"|format(sales|sum(attribute="total")) }}</div>
+        <h3>Faturamento total</h3>
     </div>
 </div>
 
 {% if low_stock %}
 <div class="alert">
-    ⚠️ <strong>{{ low_stock|length }} produto(s) com estoque baixo (≤ 5 un.):</strong>
-    {{ low_stock|map(attribute="name")|join(", ") }}
+    <span class="badge">{{ low_stock|length }} produto(s) com estoque baixo</span>
+    &nbsp;(≤ 5 un.): {{ low_stock|map(attribute="name")|join(", ") }}
 </div>
 {% endif %}
 
@@ -91,7 +91,7 @@
         <button type="submit">Registrar venda</button>
     </form>
     {% else %}
-    <p style="color:#888;">Cadastre ao menos um produto antes de registrar uma venda.</p>
+    <p class="footnote" style="margin:0;">Cadastre ao menos um produto antes de registrar uma venda.</p>
     {% endif %}
 </section>
 
@@ -99,15 +99,20 @@
     <h2>Produtos</h2>
     <table>
         <thead>
-            <tr><th>Nome</th><th>Preço</th><th>Estoque</th><th colspan="2"></th></tr>
+            <tr>
+                <th>Nome</th>
+                <th class="num">Preço</th>
+                <th class="num">Estoque</th>
+                <th colspan="2"></th>
+            </tr>
         </thead>
         <tbody>
             {% for p in products %}
             <tr>
                 <td>{{ p.name }}</td>
-                <td>R$ {{ "%.2f"|format(p.price) }}</td>
-                <td>{{ p.stock_quantity }}</td>
-                <td><a href="/web/products/{{ p.id }}/edit">Editar</a></td>
+                <td class="num">R$ {{ "%.2f"|format(p.price) }}</td>
+                <td class="num">{{ p.stock_quantity }}{% if p.stock_quantity <= 5 %} <span class="badge">baixo</span>{% endif %}</td>
+                <td><a class="link-edit" href="/web/products/{{ p.id }}/edit">Editar</a></td>
                 <td>
                     <form method="post" action="/web/products/{{ p.id }}/delete" onsubmit="return confirm('Excluir o produto {{ p.name }}?');" style="display:inline;">
                         <button type="submit" class="btn-danger">Excluir</button>
@@ -115,7 +120,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Nenhum produto cadastrado ainda.</td></tr>
+            <tr class="empty-row"><td colspan="5">Nenhum produto cadastrado ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -133,7 +138,7 @@
                 <td>{{ c.name }}</td>
                 <td>{{ c.phone or "—" }}</td>
                 <td>{{ c.email or "—" }}</td>
-                <td><a href="/web/clients/{{ c.id }}/edit">Editar</a></td>
+                <td><a class="link-edit" href="/web/clients/{{ c.id }}/edit">Editar</a></td>
                 <td>
                     <form method="post" action="/web/clients/{{ c.id }}/delete" onsubmit="return confirm('Excluir o cliente {{ c.name }}?');" style="display:inline;">
                         <button type="submit" class="btn-danger">Excluir</button>
@@ -141,7 +146,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Nenhum cliente cadastrado ainda.</td></tr>
+            <tr class="empty-row"><td colspan="5">Nenhum cliente cadastrado ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -151,14 +156,14 @@
     <h2>Vendas recentes</h2>
     <table>
         <thead>
-            <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th><th></th></tr>
+            <tr><th>ID</th><th>Cliente</th><th class="num">Total</th><th>Data</th><th></th></tr>
         </thead>
         <tbody>
             {% for s in sales %}
             <tr>
                 <td>#{{ s.id }}</td>
                 <td>{{ s.client_id or "Não informado" }}</td>
-                <td>R$ {{ "%.2f"|format(s.total) }}</td>
+                <td class="num">R$ {{ "%.2f"|format(s.total) }}</td>
                 <td>{{ s.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
                 <td>
                     <form method="post" action="/web/sales/{{ s.id }}/delete" onsubmit="return confirm('Excluir a venda #{{ s.id }}? O estoque dos produtos sera devolvido.');" style="display:inline;">
@@ -167,13 +172,13 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Nenhuma venda registrada ainda.</td></tr>
+            <tr class="empty-row"><td colspan="5">Nenhuma venda registrada ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </section>
 
-<p style="color:#888; font-size:0.85rem;">
+<p class="footnote">
     Documentação interativa da API disponível em <a href="/docs">/docs</a>.
 </p>
 

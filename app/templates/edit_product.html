@@ -2,6 +2,8 @@
 {% block title %}Editar produto{% endblock %}
 {% block content %}
 
+<p class="breadcrumb"><a href="/">← Dashboard</a></p>
+
 <section class="panel" style="max-width: 480px;">
     <h2>Editar produto</h2>
     <form method="post" action="/web/products/{{ product.id }}/edit">
@@ -16,7 +18,6 @@
         </label>
         <button type="submit">Salvar alterações</button>
     </form>
-    <p style="margin-top: 1rem;"><a href="/">← Voltar ao dashboard</a></p>
 </section>
 
 {% endblock %}
