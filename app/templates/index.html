@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Sistema de Gestão{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+{% endblock %}
 {% block content %}
 
 {% if error %}
@@ -30,6 +33,78 @@
     <span class="badge">{{ low_stock|length }} produto(s) com estoque baixo</span>
     &nbsp;(≤ 5 un.): {{ low_stock|map(attribute="name")|join(", ") }}
 </div>
+{% endif %}
+
+{% if has_sales_data %}
+<div class="charts-grid">
+    <div class="chart-panel">
+        <h2>Vendas por dia (últimos 30 dias)</h2>
+        <canvas id="chartSalesByDay"></canvas>
+    </div>
+    <div class="chart-panel">
+        <h2>Produtos mais vendidos</h2>
+        <canvas id="chartTopProducts"></canvas>
+    </div>
+</div>
+<script>
+(function () {
+    const salesByDay = {{ sales_by_day_json | safe }};
+    const topProducts = {{ top_products_json | safe }};
+
+    const inkMuted = "#5B6773";
+    const gridColor = "#DCE1E6";
+
+    new Chart(document.getElementById("chartSalesByDay"), {
+        type: "line",
+        data: {
+            labels: salesByDay.map(function (d) {
+                const [, m, day] = d.date.split("-");
+                return day + "/" + m;
+            }),
+            datasets: [{
+                label: "Faturamento (R$)",
+                data: salesByDay.map(function (d) { return d.total; }),
+                borderColor: "#1F3B4D",
+                backgroundColor: "rgba(31, 59, 77, 0.08)",
+                fill: true,
+                tension: 0.25,
+                pointRadius: 0,
+                borderWidth: 2,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: inkMuted, maxTicksLimit: 10 }, grid: { display: false } },
+                y: { ticks: { color: inkMuted }, grid: { color: gridColor }, beginAtZero: true },
+            },
+        },
+    });
+
+    new Chart(document.getElementById("chartTopProducts"), {
+        type: "bar",
+        data: {
+            labels: topProducts.map(function (p) { return p.name; }),
+            datasets: [{
+                label: "Quantidade vendida",
+                data: topProducts.map(function (p) { return p.quantity; }),
+                backgroundColor: "#B4762D",
+                borderRadius: 4,
+            }],
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: inkMuted }, grid: { color: gridColor }, beginAtZero: true },
+                y: { ticks: { color: inkMuted }, grid: { display: false } },
+            },
+        },
+    });
+})();
+</script>
 {% endif %}
 
 <div class="two-col">

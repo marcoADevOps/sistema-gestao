@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
     <style>
         :root {
             /* Cor */
@@ -241,6 +242,11 @@
         .pagination a:hover { text-decoration: underline; }
         .page-disabled { color: var(--border); font-weight: 600; }
         .page-info { color: var(--ink-muted); }
+
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.25rem; margin-bottom: 2.75rem; }
+        .chart-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem 1.5rem; }
+        .chart-panel h2 { margin: 0 0 1rem; font-size: 0.95rem; font-weight: 700; color: var(--ink); padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+        .chart-panel canvas { max-height: 280px; }
     </style>
 </head>
 <body>

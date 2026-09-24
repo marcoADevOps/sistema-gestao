@@ -178,6 +178,57 @@ def sum_sales_total(db: Session) -> float:
     return result or 0.0
 
 
+def sales_by_day(db: Session, days: int = 30):
+    """Retorna uma lista de (data, total) para os últimos `days` dias,
+    incluindo dias sem venda nenhuma (total = 0), na ordem cronológica —
+    pronto pra virar um gráfico de linha/barra sem buracos."""
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+
+    today = datetime.utcnow().date()
+    start_date = today - timedelta(days=days - 1)
+
+    rows = (
+        db.query(
+            func.date(models.Sale.created_at).label("day"),
+            func.sum(models.Sale.total).label("total"),
+        )
+        .filter(models.Sale.created_at >= start_date)
+        .group_by(func.date(models.Sale.created_at))
+        .all()
+    )
+    totals_by_day = {str(row.day): float(row.total) for row in rows}
+
+    result = []
+    for i in range(days):
+        day = start_date + timedelta(days=i)
+        key = day.isoformat()
+        result.append({"date": key, "total": round(totals_by_day.get(key, 0.0), 2)})
+    return result
+
+
+def top_products(db: Session, limit: int = 10):
+    """Os produtos mais vendidos por quantidade total, com a receita gerada."""
+    from sqlalchemy import func
+
+    rows = (
+        db.query(
+            models.Product.name,
+            func.sum(models.SaleItem.quantity).label("qty"),
+            func.sum(models.SaleItem.quantity * models.SaleItem.unit_price).label("revenue"),
+        )
+        .join(models.SaleItem, models.SaleItem.product_id == models.Product.id)
+        .group_by(models.Product.id, models.Product.name)
+        .order_by(func.sum(models.SaleItem.quantity).desc())
+        .limit(limit)
+        .all()
+    )
+    return [
+        {"name": r.name, "quantity": int(r.qty), "revenue": round(float(r.revenue), 2)}
+        for r in rows
+    ]
+
+
 def get_sale(db: Session, sale_id: int) -> models.Sale:
     sale = db.query(models.Sale).filter(models.Sale.id == sale_id).first()
     if not sale:

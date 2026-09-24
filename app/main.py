@@ -1,3 +1,4 @@
+import json
 import math
 import os
 
@@ -85,6 +86,14 @@ def dashboard(
     total_sales = crud.count_sales(db)
     sales_page = crud.list_sales(db, skip=(page_sales - 1) * PAGE_SIZE, limit=PAGE_SIZE)
 
+    sales_by_day = crud.sales_by_day(db, days=30)
+    top_products = crud.top_products(db, limit=10)
+
+    def to_safe_json(data) -> str:
+        # Evita que um nome de produto malicioso (ex: contendo "</script>")
+        # escape da tag <script> onde os dados são embutidos no HTML.
+        return json.dumps(data).replace("</", "<\\/")
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -99,6 +108,9 @@ def dashboard(
             "low_stock": [p for p in all_products if p.stock_quantity <= 5],
             "all_products": all_products,
             "all_clients": all_clients,
+            "sales_by_day_json": to_safe_json(sales_by_day),
+            "top_products_json": to_safe_json(top_products),
+            "has_sales_data": total_sales > 0,
             "error": error,
             "user": user,
             # busca e paginação
