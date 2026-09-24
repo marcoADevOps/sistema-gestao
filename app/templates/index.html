@@ -3,24 +3,24 @@
 {% block content %}
 
 {% if error %}
-<div class="alert alert-error">Não foi possível registrar a venda: {{ error }}</div>
+<div class="alert alert-error">{{ error }}</div>
 {% endif %}
 
 <div class="grid">
     <div class="card">
-        <div class="value">{{ products|length }}</div>
+        <div class="value">{{ products_count }}</div>
         <h3>Produtos cadastrados</h3>
     </div>
     <div class="card">
-        <div class="value">{{ clients|length }}</div>
+        <div class="value">{{ clients_count }}</div>
         <h3>Clientes cadastrados</h3>
     </div>
     <div class="card">
-        <div class="value">{{ sales|length }}</div>
+        <div class="value">{{ sales_count }}</div>
         <h3>Vendas registradas</h3>
     </div>
     <div class="card">
-        <div class="value">R$ {{ "%.2f"|format(sales|sum(attribute="total")) }}</div>
+        <div class="value">R$ {{ "%.2f"|format(sales_total) }}</div>
         <h3>Faturamento total</h3>
     </div>
 </div>
@@ -70,11 +70,11 @@
 
 <section class="panel">
     <h2>Registrar venda</h2>
-    {% if products %}
+    {% if all_products %}
     <form method="post" action="/web/sales">
         <label>Produto
             <select name="product_id" required>
-                {% for p in products %}
+                {% for p in all_products %}
                 <option value="{{ p.id }}">{{ p.name }} — R$ {{ "%.2f"|format(p.price) }} (estoque: {{ p.stock_quantity }})</option>
                 {% endfor %}
             </select>
@@ -85,7 +85,7 @@
         <label>Cliente (opcional)
             <select name="client_id">
                 <option value="">Não informado</option>
-                {% for c in clients %}
+                {% for c in all_clients %}
                 <option value="{{ c.id }}">{{ c.name }}</option>
                 {% endfor %}
             </select>
@@ -99,6 +99,17 @@
 
 <section>
     <h2>Produtos</h2>
+
+    <form method="get" action="/" class="search-bar">
+        <input type="text" name="q_products" value="{{ q_products }}" placeholder="Buscar produto por nome...">
+        <input type="hidden" name="page_products" value="1">
+        <input type="hidden" name="q_clients" value="{{ q_clients }}">
+        <input type="hidden" name="page_clients" value="{{ page_clients }}">
+        <input type="hidden" name="page_sales" value="{{ page_sales }}">
+        <button type="submit">Buscar</button>
+        {% if q_products %}<a class="link-edit" href="/?q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients }}&page_sales={{ page_sales }}">Limpar</a>{% endif %}
+    </form>
+
     <table>
         <thead>
             <tr>
@@ -124,14 +135,41 @@
                 {% endif %}
             </tr>
             {% else %}
-            <tr class="empty-row"><td colspan="5">Nenhum produto cadastrado ainda.</td></tr>
+            <tr class="empty-row"><td colspan="5">{% if q_products %}Nenhum produto encontrado para "{{ q_products }}".{% else %}Nenhum produto cadastrado ainda.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
+
+    {% if pages_products > 1 %}
+    <div class="pagination">
+        {% if page_products > 1 %}
+        <a href="/?q_products={{ q_products | urlencode }}&page_products={{ page_products - 1 }}&q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients }}&page_sales={{ page_sales }}">« Anterior</a>
+        {% else %}
+        <span class="page-disabled">« Anterior</span>
+        {% endif %}
+        <span class="page-info">Página {{ page_products }} de {{ pages_products }}</span>
+        {% if page_products < pages_products %}
+        <a href="/?q_products={{ q_products | urlencode }}&page_products={{ page_products + 1 }}&q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients }}&page_sales={{ page_sales }}">Próxima »</a>
+        {% else %}
+        <span class="page-disabled">Próxima »</span>
+        {% endif %}
+    </div>
+    {% endif %}
 </section>
 
 <section>
     <h2>Clientes</h2>
+
+    <form method="get" action="/" class="search-bar">
+        <input type="text" name="q_clients" value="{{ q_clients }}" placeholder="Buscar cliente por nome...">
+        <input type="hidden" name="page_clients" value="1">
+        <input type="hidden" name="q_products" value="{{ q_products }}">
+        <input type="hidden" name="page_products" value="{{ page_products }}">
+        <input type="hidden" name="page_sales" value="{{ page_sales }}">
+        <button type="submit">Buscar</button>
+        {% if q_clients %}<a class="link-edit" href="/?q_products={{ q_products | urlencode }}&page_products={{ page_products }}&page_sales={{ page_sales }}">Limpar</a>{% endif %}
+    </form>
+
     <table>
         <thead>
             <tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th colspan="2"></th></tr>
@@ -152,10 +190,26 @@
                 </td>
             </tr>
             {% else %}
-            <tr class="empty-row"><td colspan="5">Nenhum cliente cadastrado ainda.</td></tr>
+            <tr class="empty-row"><td colspan="5">{% if q_clients %}Nenhum cliente encontrado para "{{ q_clients }}".{% else %}Nenhum cliente cadastrado ainda.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
+
+    {% if pages_clients > 1 %}
+    <div class="pagination">
+        {% if page_clients > 1 %}
+        <a href="/?q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients - 1 }}&q_products={{ q_products | urlencode }}&page_products={{ page_products }}&page_sales={{ page_sales }}">« Anterior</a>
+        {% else %}
+        <span class="page-disabled">« Anterior</span>
+        {% endif %}
+        <span class="page-info">Página {{ page_clients }} de {{ pages_clients }}</span>
+        {% if page_clients < pages_clients %}
+        <a href="/?q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients + 1 }}&q_products={{ q_products | urlencode }}&page_products={{ page_products }}&page_sales={{ page_sales }}">Próxima »</a>
+        {% else %}
+        <span class="page-disabled">Próxima »</span>
+        {% endif %}
+    </div>
+    {% endif %}
 </section>
 
 <section>
@@ -184,6 +238,22 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if pages_sales > 1 %}
+    <div class="pagination">
+        {% if page_sales > 1 %}
+        <a href="/?page_sales={{ page_sales - 1 }}&q_products={{ q_products | urlencode }}&page_products={{ page_products }}&q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients }}">« Anterior</a>
+        {% else %}
+        <span class="page-disabled">« Anterior</span>
+        {% endif %}
+        <span class="page-info">Página {{ page_sales }} de {{ pages_sales }}</span>
+        {% if page_sales < pages_sales %}
+        <a href="/?page_sales={{ page_sales + 1 }}&q_products={{ q_products | urlencode }}&page_products={{ page_products }}&q_clients={{ q_clients | urlencode }}&page_clients={{ page_clients }}">Próxima »</a>
+        {% else %}
+        <span class="page-disabled">Próxima »</span>
+        {% endif %}
+    </div>
+    {% endif %}
 </section>
 
 <p class="footnote">

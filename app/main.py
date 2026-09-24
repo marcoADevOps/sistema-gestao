@@ -1,3 +1,4 @@
+import math
 import os
 
 from fastapi import FastAPI, Depends, Request
@@ -40,6 +41,8 @@ app.include_router(users.router)
 
 templates = Jinja2Templates(directory="app/templates")
 
+PAGE_SIZE = 20
+
 
 @app.get("/health")
 def health_check():
@@ -51,21 +54,61 @@ def health_check():
 def dashboard(
     request: Request,
     error: str = None,
+    q_products: str = "",
+    page_products: int = 1,
+    q_clients: str = "",
+    page_clients: int = 1,
+    page_sales: int = 1,
     db: Session = Depends(get_db),
     user: models.User = Depends(require_login_web),
 ):
-    products_list = crud.list_products(db)
-    clients_list = crud.list_clients(db)
-    sales_list = crud.list_sales(db)
+    # Conjuntos completos: usados nos contadores do topo, no alerta de
+    # estoque baixo e no dropdown de "Registrar venda" — não paginados,
+    # porque essas funções precisam enxergar tudo, não só a página atual.
+    all_products = crud.list_all_products(db)
+    all_clients = crud.list_all_clients(db)
+
+    page_products = max(page_products, 1)
+    page_clients = max(page_clients, 1)
+    page_sales = max(page_sales, 1)
+
+    total_products = crud.count_products(db, search=q_products or None)
+    products_page = crud.list_products(
+        db, skip=(page_products - 1) * PAGE_SIZE, limit=PAGE_SIZE, search=q_products or None
+    )
+
+    total_clients = crud.count_clients(db, search=q_clients or None)
+    clients_page = crud.list_clients(
+        db, skip=(page_clients - 1) * PAGE_SIZE, limit=PAGE_SIZE, search=q_clients or None
+    )
+
+    total_sales = crud.count_sales(db)
+    sales_page = crud.list_sales(db, skip=(page_sales - 1) * PAGE_SIZE, limit=PAGE_SIZE)
+
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "products": products_list,
-            "clients": clients_list,
-            "sales": sales_list,
-            "low_stock": [p for p in products_list if p.stock_quantity <= 5],
+            "products": products_page,
+            "clients": clients_page,
+            "sales": sales_page,
+            "products_count": len(all_products),
+            "clients_count": len(all_clients),
+            "sales_count": total_sales,
+            "sales_total": crud.sum_sales_total(db),
+            "low_stock": [p for p in all_products if p.stock_quantity <= 5],
+            "all_products": all_products,
+            "all_clients": all_clients,
             "error": error,
             "user": user,
+            # busca e paginação
+            "q_products": q_products,
+            "page_products": page_products,
+            "pages_products": max(math.ceil(total_products / PAGE_SIZE), 1),
+            "q_clients": q_clients,
+            "page_clients": page_clients,
+            "pages_clients": max(math.ceil(total_clients / PAGE_SIZE), 1),
+            "page_sales": page_sales,
+            "pages_sales": max(math.ceil(total_sales / PAGE_SIZE), 1),
         },
     )

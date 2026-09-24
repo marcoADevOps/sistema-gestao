@@ -14,8 +14,24 @@ def create_product(db: Session, product: schemas.ProductCreate) -> models.Produc
     return db_product
 
 
-def list_products(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Product).offset(skip).limit(limit).all()
+def list_products(db: Session, skip: int = 0, limit: int = 100, search: str | None = None):
+    query = db.query(models.Product)
+    if search:
+        query = query.filter(models.Product.name.ilike(f"%{search}%"))
+    return query.order_by(models.Product.name).offset(skip).limit(limit).all()
+
+
+def list_all_products(db: Session):
+    """Sem paginação — usado onde é preciso o conjunto completo (dropdown de
+    venda, cálculo de estoque baixo, contadores do dashboard)."""
+    return db.query(models.Product).order_by(models.Product.name).all()
+
+
+def count_products(db: Session, search: str | None = None) -> int:
+    query = db.query(models.Product)
+    if search:
+        query = query.filter(models.Product.name.ilike(f"%{search}%"))
+    return query.count()
 
 
 def get_product(db: Session, product_id: int) -> models.Product:
@@ -56,8 +72,23 @@ def create_client(db: Session, client: schemas.ClientCreate) -> models.Client:
     return db_client
 
 
-def list_clients(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Client).offset(skip).limit(limit).all()
+def list_clients(db: Session, skip: int = 0, limit: int = 100, search: str | None = None):
+    query = db.query(models.Client)
+    if search:
+        query = query.filter(models.Client.name.ilike(f"%{search}%"))
+    return query.order_by(models.Client.name).offset(skip).limit(limit).all()
+
+
+def list_all_clients(db: Session):
+    """Sem paginação — usado no dropdown de venda e nos contadores do dashboard."""
+    return db.query(models.Client).order_by(models.Client.name).all()
+
+
+def count_clients(db: Session, search: str | None = None) -> int:
+    query = db.query(models.Client)
+    if search:
+        query = query.filter(models.Client.name.ilike(f"%{search}%"))
+    return query.count()
 
 
 def get_client(db: Session, client_id: int) -> models.Client:
@@ -127,7 +158,24 @@ def create_sale(db: Session, sale: schemas.SaleCreate) -> models.Sale:
 
 
 def list_sales(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Sale).offset(skip).limit(limit).all()
+    return (
+        db.query(models.Sale)
+        .order_by(models.Sale.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+def count_sales(db: Session) -> int:
+    return db.query(models.Sale).count()
+
+
+def sum_sales_total(db: Session) -> float:
+    from sqlalchemy import func
+
+    result = db.query(func.sum(models.Sale.total)).scalar()
+    return result or 0.0
 
 
 def get_sale(db: Session, sale_id: int) -> models.Sale:

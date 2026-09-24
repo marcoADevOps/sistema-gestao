@@ -222,6 +222,25 @@
         .breadcrumb { font-size: 0.85rem; margin-bottom: 1.5rem; }
         .breadcrumb a { color: var(--ink-muted); text-decoration: none; }
         .breadcrumb a:hover { color: var(--primary); }
+
+        .search-bar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
+        .search-bar input[type="text"] {
+            flex: 1; max-width: 320px; margin: 0;
+            padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 0.88rem; font-family: var(--font-ui);
+        }
+        .search-bar button {
+            padding: 0.5rem 1rem; font-size: 0.85rem;
+        }
+
+        .pagination {
+            display: flex; align-items: center; justify-content: center; gap: 1.2rem;
+            margin-top: 0.9rem; font-size: 0.85rem;
+        }
+        .pagination a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .pagination a:hover { text-decoration: underline; }
+        .page-disabled { color: var(--border); font-weight: 600; }
+        .page-info { color: var(--ink-muted); }
     </style>
 </head>
 <body>
