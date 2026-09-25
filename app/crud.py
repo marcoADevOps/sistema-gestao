@@ -229,6 +229,18 @@ def top_products(db: Session, limit: int = 10):
     ]
 
 
+# ---------- Log de auditoria ----------
+
+def log_action(db: Session, username: str, action: str, description: str) -> None:
+    entry = models.AuditLog(username=username, action=action, description=description)
+    db.add(entry)
+    db.commit()
+
+
+def list_audit_log(db: Session, limit: int = 200):
+    return db.query(models.AuditLog).order_by(models.AuditLog.created_at.desc()).limit(limit).all()
+
+
 def get_sale(db: Session, sale_id: int) -> models.Sale:
     sale = db.query(models.Sale).filter(models.Sale.id == sale_id).first()
     if not sale:

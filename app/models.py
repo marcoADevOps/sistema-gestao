@@ -63,3 +63,15 @@ class SaleItem(Base):
 
     sale = relationship("Sale", back_populates="items")
     product = relationship("Product", back_populates="sale_items")
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # Guardamos o username como texto (não FK) de propósito: o registro
+    # precisa continuar legível mesmo que o usuário seja excluído depois.
+    username = Column(String(80), nullable=False)
+    action = Column(String(50), nullable=False)
+    description = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

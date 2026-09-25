@@ -259,6 +259,7 @@
         <div class="header-user">
             {% if user.role == "admin" %}
             <a href="/web/users" style="color: var(--ink-muted); text-decoration: none; font-weight: 600;">Usuários</a>
+            <a href="/web/audit-log" style="color: var(--ink-muted); text-decoration: none; font-weight: 600;">Auditoria</a>
             {% endif %}
             <span>{{ user.username }} <span class="footnote" style="margin:0;">({{ "admin" if user.role == "admin" else "operador" }})</span></span>
             <form method="post" action="/logout">

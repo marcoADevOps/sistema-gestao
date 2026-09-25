@@ -1,4 +1,5 @@
 import os
+import re
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_web.db"
 
@@ -36,16 +37,46 @@ def login_test_user(setup_and_teardown_db):
     yield
 
 
+def csrf():
+    """Busca o token CSRF da sessão atual (qualquer página autenticada o expõe)."""
+    response = client.get("/")
+    match = re.search(r'name="csrf_token" value="([^"]+)"', response.text)
+    assert match, "csrf_token não encontrado na página"
+    return match.group(1)
+
+
 def test_dashboard_loads():
     response = client.get("/")
     assert response.status_code == 200
     assert "Sistema de Gestão" in response.text
 
 
+def test_post_without_csrf_token_is_rejected():
+    response = client.post(
+        "/web/products", data={"name": "Sem token", "price": "1.0", "stock_quantity": "1"}
+    )
+    # sem o campo csrf_token no formulário, o FastAPI rejeita a requisição
+    # na validação antes mesmo de chegar na checagem de igualdade (422)
+    assert response.status_code == 422
+
+
+def test_post_with_wrong_csrf_token_is_rejected():
+    response = client.post(
+        "/web/products",
+        data={
+            "name": "Token errado",
+            "price": "1.0",
+            "stock_quantity": "1",
+            "csrf_token": "token-invalido",
+        },
+    )
+    assert response.status_code == 403
+
+
 def test_create_product_via_form_redirects_and_persists():
     response = client.post(
         "/web/products",
-        data={"name": "Borracha", "price": "1.5", "stock_quantity": "20"},
+        data={"name": "Borracha", "price": "1.5", "stock_quantity": "20", "csrf_token": csrf()},
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -58,7 +89,12 @@ def test_create_product_via_form_redirects_and_persists():
 def test_create_client_via_form():
     response = client.post(
         "/web/clients",
-        data={"name": "Maria Souza", "phone": "61988887777", "email": ""},
+        data={
+            "name": "Maria Souza",
+            "phone": "61988887777",
+            "email": "",
+            "csrf_token": csrf(),
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -74,7 +110,12 @@ def test_create_sale_via_form_reduces_stock():
 
     response = client.post(
         "/web/sales",
-        data={"product_id": str(product["id"]), "quantity": "4", "client_id": ""},
+        data={
+            "product_id": str(product["id"]),
+            "quantity": "4",
+            "client_id": "",
+            "csrf_token": csrf(),
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -91,7 +132,12 @@ def test_create_sale_via_form_insufficient_stock_redirects_with_error():
 
     response = client.post(
         "/web/sales",
-        data={"product_id": str(product["id"]), "quantity": "5", "client_id": ""},
+        data={
+            "product_id": str(product["id"]),
+            "quantity": "5",
+            "client_id": "",
+            "csrf_token": csrf(),
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -115,7 +161,12 @@ def test_edit_product_submit_updates_values():
 
     response = client.post(
         f"/web/products/{product['id']}/edit",
-        data={"name": "Lapiseira 0.7mm", "price": "7.5", "stock_quantity": "12"},
+        data={
+            "name": "Lapiseira 0.7mm",
+            "price": "7.5",
+            "stock_quantity": "12",
+            "csrf_token": csrf(),
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -133,7 +184,12 @@ def test_edit_client_submit_updates_values():
 
     response = client.post(
         f"/web/clients/{created['id']}/edit",
-        data={"name": "Ana Lima Souza", "phone": "61999998888", "email": "ana@exemplo.com"},
+        data={
+            "name": "Ana Lima Souza",
+            "phone": "61999998888",
+            "email": "ana@exemplo.com",
+            "csrf_token": csrf(),
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -149,7 +205,11 @@ def test_delete_product_without_sales_succeeds():
         "/api/products/", json={"name": "Clipe", "price": 0.5, "stock_quantity": 100}
     ).json()
 
-    response = client.post(f"/web/products/{product['id']}/delete", follow_redirects=False)
+    response = client.post(
+        f"/web/products/{product['id']}/delete",
+        data={"csrf_token": csrf()},
+        follow_redirects=False,
+    )
     assert response.status_code == 303
     assert "error=" not in response.headers["location"]
 
@@ -165,7 +225,11 @@ def test_delete_product_with_sales_is_blocked():
         "/api/sales/", json={"items": [{"product_id": product["id"], "quantity": 1}]}
     )
 
-    response = client.post(f"/web/products/{product['id']}/delete", follow_redirects=False)
+    response = client.post(
+        f"/web/products/{product['id']}/delete",
+        data={"csrf_token": csrf()},
+        follow_redirects=False,
+    )
     assert response.status_code == 303
     assert "error=" in response.headers["location"]
 
@@ -187,7 +251,11 @@ def test_delete_client_with_sales_is_blocked():
         },
     )
 
-    response = client.post(f"/web/clients/{created_client['id']}/delete", follow_redirects=False)
+    response = client.post(
+        f"/web/clients/{created_client['id']}/delete",
+        data={"csrf_token": csrf()},
+        follow_redirects=False,
+    )
     assert response.status_code == 303
     assert "error=" in response.headers["location"]
 
@@ -203,7 +271,9 @@ def test_delete_sale_restores_stock():
     updated = client.get(f"/api/products/{product['id']}").json()
     assert updated["stock_quantity"] == 6  # baixou com a venda
 
-    response = client.post(f"/web/sales/{sale['id']}/delete", follow_redirects=False)
+    response = client.post(
+        f"/web/sales/{sale['id']}/delete", data={"csrf_token": csrf()}, follow_redirects=False
+    )
     assert response.status_code == 303
 
     restored = client.get(f"/api/products/{product['id']}").json()

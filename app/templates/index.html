@@ -112,6 +112,7 @@
     <section class="panel">
         <h2>Cadastrar produto</h2>
         <form method="post" action="/web/products">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <label>Nome
                 <input type="text" name="name" required>
             </label>
@@ -129,6 +130,7 @@
     <section class="panel">
         <h2>Cadastrar cliente</h2>
         <form method="post" action="/web/clients">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <label>Nome
                 <input type="text" name="name" required>
             </label>
@@ -147,6 +149,7 @@
     <h2>Registrar venda</h2>
     {% if all_products %}
     <form method="post" action="/web/sales">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Produto
             <select name="product_id" required>
                 {% for p in all_products %}
@@ -204,6 +207,7 @@
                 <td><a class="link-edit" href="/web/products/{{ p.id }}/edit">Editar</a></td>
                 <td>
                     <form method="post" action="/web/products/{{ p.id }}/delete" onsubmit="return confirm('Excluir o produto {{ p.name }}?');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn-danger">Excluir</button>
                     </form>
                 </td>
@@ -259,6 +263,7 @@
                 <td>
                     {% if user.role == "admin" %}
                     <form method="post" action="/web/clients/{{ c.id }}/delete" onsubmit="return confirm('Excluir o cliente {{ c.name }}?');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn-danger">Excluir</button>
                     </form>
                     {% endif %}
@@ -303,6 +308,7 @@
                 <td>
                     {% if user.role == "admin" %}
                     <form method="post" action="/web/sales/{{ s.id }}/delete" onsubmit="return confirm('Excluir a venda #{{ s.id }}? O estoque dos produtos sera devolvido.');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn-danger">Excluir</button>
                     </form>
                     {% endif %}

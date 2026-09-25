@@ -11,6 +11,7 @@
 <section class="panel" style="max-width: 480px; margin-bottom: 2rem;">
     <h2>Adicionar usuário</h2>
     <form method="post" action="/web/users">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Usuário
             <input type="text" name="username" required>
         </label>
@@ -42,6 +43,7 @@
                 <td>
                     {% if u.id != user.id %}
                     <form method="post" action="/web/users/{{ u.id }}/delete" onsubmit="return confirm('Excluir o usuário {{ u.username }}?');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn-danger">Excluir</button>
                     </form>
                     {% else %}

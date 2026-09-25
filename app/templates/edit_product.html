@@ -7,6 +7,7 @@
 <section class="panel" style="max-width: 480px;">
     <h2>Editar produto</h2>
     <form method="post" action="/web/products/{{ product.id }}/edit">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Nome
             <input type="text" name="name" value="{{ product.name }}" required>
         </label>

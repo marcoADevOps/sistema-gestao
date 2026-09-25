@@ -1,4 +1,5 @@
 import os
+import re
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_roles.db"
 
@@ -33,12 +34,22 @@ def login_as(client, username, password):
     return client.post("/login", data={"username": username, "password": password})
 
 
+def csrf(client):
+    """Garante um token CSRF válido para a sessão desse client (visitando
+    uma página autenticada, que sempre expõe o token)."""
+    response = client.get("/")
+    match = re.search(r'name="csrf_token" value="([^"]+)"', response.text)
+    assert match, "csrf_token não encontrado — a página carregou corretamente?"
+    return match.group(1)
+
+
 def test_operador_cannot_create_product_via_web():
     client = TestClient(app, follow_redirects=False)
     login_as(client, "operador1", "operpass123")
 
     response = client.post(
-        "/web/products", data={"name": "Caneta", "price": "2.5", "stock_quantity": "10"}
+        "/web/products",
+        data={"name": "Caneta", "price": "2.5", "stock_quantity": "10", "csrf_token": csrf(client)},
     )
     assert response.status_code == 307
     assert response.headers["location"] == "/"
@@ -69,15 +80,23 @@ def test_operador_can_create_sale_and_client():
 
     op_client = TestClient(app)
     login_as(op_client, "operador1", "operpass123")
+    op_csrf = csrf(op_client)
 
     client_response = op_client.post(
-        "/web/clients", data={"name": "Cliente Teste"}, follow_redirects=False
+        "/web/clients",
+        data={"name": "Cliente Teste", "csrf_token": op_csrf},
+        follow_redirects=False,
     )
     assert client_response.status_code == 303
 
     sale_response = op_client.post(
         "/web/sales",
-        data={"product_id": str(product["id"]), "quantity": "1", "client_id": ""},
+        data={
+            "product_id": str(product["id"]),
+            "quantity": "1",
+            "client_id": "",
+            "csrf_token": op_csrf,
+        },
         follow_redirects=False,
     )
     assert sale_response.status_code == 303
@@ -92,7 +111,9 @@ def test_operador_cannot_delete_product():
 
     op_client = TestClient(app, follow_redirects=False)
     login_as(op_client, "operador1", "operpass123")
-    response = op_client.post(f"/web/products/{product['id']}/delete")
+    response = op_client.post(
+        f"/web/products/{product['id']}/delete", data={"csrf_token": csrf(op_client)}
+    )
     assert response.status_code == 307
 
     # continua existindo
@@ -115,9 +136,17 @@ def test_admin_can_access_user_management_and_create_user():
     assert response.status_code == 200
     assert "operador1" in response.text
 
+    users_csrf_match = re.search(r'name="csrf_token" value="([^"]+)"', response.text)
+    assert users_csrf_match
+
     create_response = client.post(
         "/web/users",
-        data={"username": "novooperador", "password": "senha123456", "role": "operador"},
+        data={
+            "username": "novooperador",
+            "password": "senha123456",
+            "role": "operador",
+            "csrf_token": users_csrf_match.group(1),
+        },
         follow_redirects=False,
     )
     assert create_response.status_code == 303
@@ -131,7 +160,9 @@ def test_admin_cannot_delete_own_user():
     login_as(client, "admin1", "adminpass123")
 
     admin_user = SessionLocal().query(models.User).filter_by(username="admin1").first()
-    response = client.post(f"/web/users/{admin_user.id}/delete")
+    response = client.post(
+        f"/web/users/{admin_user.id}/delete", data={"csrf_token": csrf(client)}
+    )
     assert response.status_code == 303
     assert "error=" in response.headers["location"]
 
@@ -139,6 +170,7 @@ def test_admin_cannot_delete_own_user():
 def test_cannot_delete_last_admin():
     client = TestClient(app, follow_redirects=False)
     login_as(client, "admin1", "adminpass123")
+    token = csrf(client)
 
     db = SessionLocal()
     other_admin = models.User(
@@ -151,12 +183,14 @@ def test_cannot_delete_last_admin():
     db.close()
 
     # com dois admins, deletar um funciona
-    response = client.post(f"/web/users/{other_admin_id}/delete")
+    response = client.post(
+        f"/web/users/{other_admin_id}/delete", data={"csrf_token": token}
+    )
     assert response.status_code == 303
     assert "error=" not in response.headers["location"]
 
     # tenta deletar o operador — não afeta a regra de "último admin"
     op = SessionLocal().query(models.User).filter_by(username="operador1").first()
-    response2 = client.post(f"/web/users/{op.id}/delete")
+    response2 = client.post(f"/web/users/{op.id}/delete", data={"csrf_token": token})
     assert response2.status_code == 303
     assert "error=" not in response2.headers["location"]
