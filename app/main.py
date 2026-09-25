@@ -11,7 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import crud, models
 from app.auth import require_login_web, get_csrf_token
 from app.database import Base, engine, get_db
-from app.routers import products, clients, sales, web, auth, users, audit
+from app.routers import products, clients, sales, web, auth, users, audit, reports
 
 # Cria as tabelas automaticamente se não existirem (suficiente para o MVP;
 # num projeto maior isso vira migração com Alembic).
@@ -40,6 +40,7 @@ app.include_router(sales.router)
 app.include_router(web.router)
 app.include_router(users.router)
 app.include_router(audit.router)
+app.include_router(reports.router)
 
 templates = Jinja2Templates(directory="app/templates")
 

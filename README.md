@@ -182,8 +182,16 @@ para ser avisado se a aplicação cair.
 - [x] **v1** — Cadastro de produtos, clientes, registro de vendas com baixa
       automática de estoque, dashboard básico, pipeline de CI/CD completo
       com deploy automatizado
-- [ ] **v2** — Formulário de cadastro no próprio dashboard (hoje só é possível
-      via `/docs`), dashboard com gráficos, autenticação de usuários com
-      perfis, exportação de relatórios (Excel/PDF), alerta de estoque baixo
+- [x] **v2** — Completo:
+  - [x] Formulários de cadastro/edição/exclusão direto no dashboard (antes
+        só era possível via `/docs`)
+  - [x] Autenticação de usuários com perfis (admin/operador)
+  - [x] Redesign visual do frontend
+  - [x] Paginação e busca nas tabelas do dashboard
+  - [x] Dashboard com gráficos (vendas por dia, produtos mais vendidos)
+  - [x] Alerta de estoque baixo
+  - [x] Rate limiting, proteção CSRF e log de auditoria
+  - [x] Exportação de relatórios (Excel/PDF) de produtos, clientes e
+        vendas — com filtro por período no relatório de vendas
 - [ ] **v3** — Notificações automáticas (e-mail/WhatsApp) e exemplo de
       deploy paralelo na AWS

@@ -35,6 +35,40 @@
 </div>
 {% endif %}
 
+<section class="panel">
+    <h2>Relatórios</h2>
+    <p class="footnote" style="margin:0 0 1.1rem;">Exporte os dados cadastrados em Excel ou PDF.</p>
+
+    <div class="reports-grid">
+        <div class="report-group">
+            <h4>Produtos</h4>
+            <a class="btn" href="/web/reports/products.xlsx">Excel</a>
+            <a class="btn" href="/web/reports/products.pdf">PDF</a>
+        </div>
+
+        <div class="report-group">
+            <h4>Clientes</h4>
+            <a class="btn" href="/web/reports/clients.xlsx">Excel</a>
+            <a class="btn" href="/web/reports/clients.pdf">PDF</a>
+        </div>
+
+        <div class="report-group">
+            <h4>Vendas</h4>
+            <form method="get" action="/web/reports/sales.xlsx" class="report-sales-form">
+                <label>De
+                    <input type="date" name="start_date">
+                </label>
+                <label>Até
+                    <input type="date" name="end_date">
+                </label>
+                <button type="submit" class="btn">Excel</button>
+                <button type="submit" class="btn" formaction="/web/reports/sales.pdf">PDF</button>
+            </form>
+            <p class="footnote" style="margin:0.5rem 0 0;">Deixe em branco para exportar todo o histórico.</p>
+        </div>
+    </div>
+</section>
+
 {% if has_sales_data %}
 <div class="charts-grid">
     <div class="chart-panel">

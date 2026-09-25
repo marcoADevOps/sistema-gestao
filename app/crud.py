@@ -171,6 +171,24 @@ def count_sales(db: Session) -> int:
     return db.query(models.Sale).count()
 
 
+def list_all_sales(db: Session, start_date=None, end_date=None):
+    """Sem paginação, com itens/produtos/cliente já carregados — usado nos
+    relatórios exportáveis (Excel/PDF), que precisam do detalhe da venda."""
+    from datetime import datetime, timedelta
+
+    from sqlalchemy.orm import joinedload
+
+    query = db.query(models.Sale).options(
+        joinedload(models.Sale.client),
+        joinedload(models.Sale.items).joinedload(models.SaleItem.product),
+    )
+    if start_date:
+        query = query.filter(models.Sale.created_at >= datetime.combine(start_date, datetime.min.time()))
+    if end_date:
+        query = query.filter(models.Sale.created_at < datetime.combine(end_date, datetime.min.time()) + timedelta(days=1))
+    return query.order_by(models.Sale.created_at).all()
+
+
 def sum_sales_total(db: Session) -> float:
     from sqlalchemy import func
 
