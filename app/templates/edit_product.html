@@ -2,10 +2,14 @@
 {% block title %}Editar produto{% endblock %}
 {% block content %}
 
-<p class="breadcrumb"><a href="/">← Dashboard</a></p>
+<p class="breadcrumb"><a href="/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 5 8 12 14 19"></polyline></svg> Dashboard</a></p>
 
-<section class="panel" style="max-width: 480px;">
-    <h2>Editar produto</h2>
+<div class="page-header">
+    <div class="page-title">Editar produto</div>
+    <div class="page-subtitle">{{ product.name }}</div>
+</div>
+
+<section class="panel" style="max-width: 460px;">
     <form method="post" action="/web/products/{{ product.id }}/edit">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Nome
@@ -17,8 +21,25 @@
         <label>Estoque
             <input type="number" name="stock_quantity" min="0" value="{{ product.stock_quantity }}" required>
         </label>
-        <button type="submit">Salvar alterações</button>
+        <div style="display: flex; gap: 0.6rem;">
+            <button type="submit">Salvar alterações</button>
+            <a href="/" class="btn btn-ghost">Cancelar</a>
+        </div>
     </form>
 </section>
+
+<div class="panel-danger" style="max-width: 460px;">
+    <div style="flex-grow: 1;">
+        <div class="title">Excluir produto</div>
+        <div class="desc">Só é possível se não houver vendas registradas com este produto. Esta ação não pode ser desfeita.</div>
+    </div>
+    <form method="post" action="/web/products/{{ product.id }}/delete" onsubmit="return confirm('Excluir o produto {{ product.name }}?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="btn btn-danger-solid" style="flex-shrink: 0;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            Excluir
+        </button>
+    </form>
+</div>
 
 {% endblock %}

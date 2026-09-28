@@ -2,10 +2,14 @@
 {% block title %}Editar cliente{% endblock %}
 {% block content %}
 
-<p class="breadcrumb"><a href="/">← Dashboard</a></p>
+<p class="breadcrumb"><a href="/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 5 8 12 14 19"></polyline></svg> Dashboard</a></p>
 
-<section class="panel" style="max-width: 480px;">
-    <h2>Editar cliente</h2>
+<div class="page-header">
+    <div class="page-title">Editar cliente</div>
+    <div class="page-subtitle">{{ client.name }}</div>
+</div>
+
+<section class="panel" style="max-width: 460px;">
     <form method="post" action="/web/clients/{{ client.id }}/edit">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Nome
@@ -17,7 +21,10 @@
         <label>E-mail
             <input type="email" name="email" value="{{ client.email or '' }}" placeholder="(opcional)">
         </label>
-        <button type="submit">Salvar alterações</button>
+        <div style="display: flex; gap: 0.6rem;">
+            <button type="submit">Salvar alterações</button>
+            <a href="/" class="btn btn-ghost">Cancelar</a>
+        </div>
     </form>
 </section>
 

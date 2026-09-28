@@ -2,34 +2,33 @@
 {% block title %}Log de auditoria — Sistema de Gestão{% endblock %}
 {% block content %}
 
-<p class="breadcrumb"><a href="/">← Dashboard</a></p>
+<div class="page-header">
+    <div class="page-title">Log de auditoria</div>
+    <div class="page-subtitle">Últimas {{ entries|length }} ações registradas, mais recentes primeiro</div>
+</div>
 
-<section>
-    <h2>Log de auditoria</h2>
-    <p class="footnote" style="margin-top:-0.6rem;">Últimas {{ entries|length }} ações registradas, mais recentes primeiro.</p>
-    <table>
-        <thead>
-            <tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Detalhes</th></tr>
-        </thead>
-        <tbody>
-            {% for e in entries %}
-            <tr>
-                <td>{{ e.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
-                <td>{{ e.username }}</td>
-                <td>
-                    {% if "delete" in e.action %}
-                    <span class="badge">{{ e.action }}</span>
-                    {% else %}
-                    {{ e.action }}
-                    {% endif %}
-                </td>
-                <td>{{ e.description }}</td>
-            </tr>
-            {% else %}
-            <tr class="empty-row"><td colspan="4">Nenhum registro ainda.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
+<table>
+    <thead>
+        <tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Detalhes</th></tr>
+    </thead>
+    <tbody>
+        {% for e in entries %}
+        <tr>
+            <td data-label="Data/hora">{{ e.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+            <td data-label="Usuário">{{ e.username }}</td>
+            <td data-label="Ação">
+                {% if "delete" in e.action %}
+                <span class="badge">{{ e.action }}</span>
+                {% else %}
+                <span class="badge badge-neutral">{{ e.action }}</span>
+                {% endif %}
+            </td>
+            <td data-label="Detalhes">{{ e.description }}</td>
+        </tr>
+        {% else %}
+        <tr class="empty-row"><td colspan="4">Nenhum registro ainda.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}
