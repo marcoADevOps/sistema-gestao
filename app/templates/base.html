@@ -250,6 +250,7 @@
         }
 
         .btn, form button {
+            -webkit-appearance: none; appearance: none;
             background: var(--primary); color: white; border: none;
             padding: 0.65rem 1.3rem; border-radius: 8px; cursor: pointer;
             font-size: 0.88rem; font-weight: 600; font-family: var(--font-ui);
@@ -281,6 +282,12 @@
             display: inline-flex; align-items: center; justify-content: center;
             text-decoration: none; flex-shrink: 0;
         }
+        /* Chrome collapses an <svg> child's width to 0 inside a flex <button>
+           (its internal UA box model treats replaced children differently than
+           in a <div> or <a>) — pin the icon's own box so it always paints. */
+        .icon-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+        .logout-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+        .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
         .icon-btn:hover { background: var(--border); color: var(--ink); }
         .icon-btn-danger { background: var(--danger-soft); color: var(--danger); }
         .icon-btn-danger:hover { background: #f5d3d3; color: var(--danger); }
